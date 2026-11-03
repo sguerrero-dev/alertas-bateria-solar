@@ -3,9 +3,8 @@ name: Alertas bateria solar
 # GitHub no garantiza los horarios programados (a veces pasan horas sin correr),
 # por eso cada ejecución se queda revisando cada 5 minutos durante ~5 h 50 min
 # y la siguiente queda en cola para continuar sin huecos.
+# DESACTIVADO: la automatizacion ahora corre en Azure Functions (alertas-caujaral-20229).
 on:
-  schedule:
-    - cron: "*/30 * * * *"
   workflow_dispatch:
     inputs:
       prueba:
