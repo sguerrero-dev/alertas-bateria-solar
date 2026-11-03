@@ -64,6 +64,8 @@ TOKEN_EXPIRADO = {"100002", "C0602"}
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
 
+ENCABEZADO = "*⚡ Salva Energy*\n"
+
 MENSAJES = {
     "item1": "⚠️ Caujaral se quedó sin luz. Raciona el uso de tu batería, tu batería está cargada.",
     "item2": "🔋 Tu batería está al 50%. Raciona energía.",
@@ -199,7 +201,7 @@ def guardar_estado(estado):
 
 def enviar_whatsapp(texto):
     client = Client(TWILIO_SID, TWILIO_TOKEN)
-    msg = client.messages.create(from_=TWILIO_FROM, to=CLIENTE_TO, body=texto)
+    msg = client.messages.create(from_=TWILIO_FROM, to=CLIENTE_TO, body=ENCABEZADO + texto)
     log.info("WhatsApp enviado (sid %s): %s", msg.sid, texto)
 
 
