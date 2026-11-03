@@ -1,0 +1,50 @@
+name: Alertas bateria solar
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: alertas
+  cancel-in-progress: false
+
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Revisar SEMS+ y enviar WhatsApp
+        env:
+          SEMS_USER: ${{ secrets.SEMS_USER }}
+          SEMS_PASSWORD: ${{ secrets.SEMS_PASSWORD }}
+          SEMS_STATION_ID: ${{ secrets.SEMS_STATION_ID }}
+          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_WHATSAPP_FROM: whatsapp:+14155238886
+          CLIENTE_WHATSAPP_TO: ${{ secrets.CLIENTE_WHATSAPP_TO }}
+          STATE_FILE: estado_alertas.json
+        run: python goodwe_whatsapp_alertas.py --once
+
+      - name: Guardar estado
+        run: |
+          if [ -n "$(git status --porcelain estado_alertas.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add estado_alertas.json
+            git commit -m "Actualizar estado de alertas"
+            git push
+          fi
