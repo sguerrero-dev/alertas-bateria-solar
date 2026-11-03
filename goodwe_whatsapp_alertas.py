@@ -67,10 +67,10 @@ UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
 ENCABEZADO = "*⚡ Salva Energy*\n"
 
 MENSAJES = {
-    "item1": "Caujaral se quedó sin luz, raciona el uso de tu batería, tu batería está cargada",
-    "item2": "Tu batería está al 50%, raciona energía",
-    "item3": "Hay luz en Caujaral",
-    "item4": "Caujaral está sin luz, raciona tu uso, batería al 50%",
+    "item1": "⚠️ Caujaral se quedó sin luz, raciona el uso de tu batería, tu batería está cargada",
+    "item2": "🔋 Tu batería está al 50%, raciona energía",
+    "item3": "💡 Hay luz en Caujaral",
+    "item4": "⚠️ Caujaral está sin luz, raciona tu uso, batería al 50%",
 }
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
