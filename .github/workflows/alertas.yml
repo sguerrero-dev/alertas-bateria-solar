@@ -1,8 +1,11 @@
 name: Alertas bateria solar
 
+# GitHub no garantiza los horarios programados (a veces pasan horas sin correr),
+# por eso cada ejecución se queda revisando cada 5 minutos durante ~5 h 50 min
+# y la siguiente queda en cola para continuar sin huecos.
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/30 * * * *"
   workflow_dispatch:
     inputs:
       prueba:
@@ -20,7 +23,7 @@ concurrency:
 jobs:
   revisar:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 358
     steps:
       - uses: actions/checkout@v4
 
@@ -32,7 +35,7 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
-      - name: Revisar SEMS+ y enviar WhatsApp
+      - name: Revisar SEMS+ cada 5 minutos y enviar WhatsApp
         env:
           SEMS_USER: ${{ secrets.SEMS_USER }}
           SEMS_PASSWORD: ${{ secrets.SEMS_PASSWORD }}
@@ -42,14 +45,20 @@ jobs:
           TWILIO_WHATSAPP_FROM: whatsapp:+14155238886
           CLIENTE_WHATSAPP_TO: ${{ secrets.CLIENTE_WHATSAPP_TO }}
           STATE_FILE: estado_alertas.json
-        run: python goodwe_whatsapp_alertas.py ${{ inputs.prueba && '--test' || '--once' }}
-
-      - name: Guardar estado
+          PRUEBA: ${{ inputs.prueba }}
         run: |
-          if [ -n "$(git status --porcelain estado_alertas.json)" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add estado_alertas.json
-            git commit -m "Actualizar estado de alertas"
-            git push
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ "$PRUEBA" = "true" ]; then
+            python goodwe_whatsapp_alertas.py --test
+            exit 0
           fi
+          for i in $(seq 1 70); do
+            python goodwe_whatsapp_alertas.py --once || echo "Fallo la revision $i, se reintenta en 5 min"
+            if [ -n "$(git status --porcelain estado_alertas.json)" ]; then
+              git add estado_alertas.json
+              git commit -q -m "Actualizar estado de alertas"
+              git pull -q --rebase && git push -q || echo "No se pudo guardar el estado"
+            fi
+            if [ "$i" -lt 70 ]; then sleep 300; fi
+          done
