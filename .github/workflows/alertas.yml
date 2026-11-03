@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "*/5 * * * *"
   workflow_dispatch:
+    inputs:
+      prueba:
+        description: "Enviar un WhatsApp de prueba"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -37,7 +42,7 @@ jobs:
           TWILIO_WHATSAPP_FROM: whatsapp:+14155238886
           CLIENTE_WHATSAPP_TO: ${{ secrets.CLIENTE_WHATSAPP_TO }}
           STATE_FILE: estado_alertas.json
-        run: python goodwe_whatsapp_alertas.py --once
+        run: python goodwe_whatsapp_alertas.py ${{ inputs.prueba && '--test' || '--once' }}
 
       - name: Guardar estado
         run: |
